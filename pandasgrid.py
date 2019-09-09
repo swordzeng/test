@@ -1,41 +1,18 @@
+import numpy as np
+import pandas as pd
+
 import wx
-from wx import EVT_CLOSE
-import wx.grid as gridlib
+import wx.grid
 
 EVEN_ROW_COLOUR = '#CCE6FF'
 GRID_LINE_COLOUR = '#ccc'
 
-class PandasTable(wx.Frame):
-    def __init__(self, parent, title, df):
-        super(PandasTable, self).__init__(parent, title=title)
-        panel = wx.Panel(self, -1)
-        self.data = df
-        grid = self.create_grid(panel, self.data)
-        sizer = wx.BoxSizer(wx.VERTICAL)
-        sizer.Add(grid, 1, wx.ALL|wx.EXPAND)
-        panel.SetSizer(sizer)
-
-        # Bind Close Event
-        EVT_CLOSE(self, self.exit)
-        self.Center()
-        self.Show()
-
-    def exit(self, event):
-        self.Destroy()
-
-    def create_grid(self, panel, data):
-        table = DataTable(data)
-        grid = DataGrid(panel)
-        grid.CreateGrid(len(data), len(data.columns))
-        grid.SetTable(table)
-        grid.AutoSize()
-        grid.AutoSizeColumns(True)
-        return grid
-
-class DataTable(gridlib.PyGridTableBase):
+class DataTable(wx.grid.GridTableBase):
     def __init__(self, data=None):
-        gridlib.PyGridTableBase.__init__(self)
-        self.headerRows = 0
+        wx.grid.GridTableBase.__init__(self)
+        self.headerRows = 1
+        if data is None:
+            data = pd.DataFrame()
         self.data = data
 
     def GetNumberRows(self):
@@ -47,44 +24,60 @@ class DataTable(gridlib.PyGridTableBase):
     def GetValue(self, row, col):
         if col == 0:
             return self.data.index[row]
-        return self.data.ix[row, col-1]
+        return self.data.iloc[row, col - 1]
 
     def SetValue(self, row, col, value):
-        pass
+        self.data.iloc[row, col - 1] = value
 
     def GetColLabelValue(self, col):
         if col == 0:
-            return 'Index' if self.data.index.name is None else self.data.index.name
-        return self.data.columns[col-1]
+            if self.data.index.name is None:
+                return 'Index'
+            else:
+                return self.data.index.name
+        return str(self.data.columns[col - 1])
 
     def GetTypeName(self, row, col):
-        return gridlib.GRID_VALUE_STRING
+        return wx.grid.GRID_VALUE_STRING
 
     def GetAttr(self, row, col, prop):
-        attr = gridlib.GridCellAttr()
+        attr = wx.grid.GridCellAttr()
         if row % 2 == 1:
             attr.SetBackgroundColour(EVEN_ROW_COLOUR)
         return attr
 
-class DataGrid(gridlib.Grid):
-    def __init__(self, parent, size=wx.Size(1000, 500)):
-        self.parent = parent
-        gridlib.Grid.__init__(self, self.parent, -1)
-        self.SetGridLineColour(GRID_LINE_COLOUR)
-        self.SetRowLabelSize(0)
-        self.SetColLabelSize(30)
-        self.table = DataTable()
 
-def display(df):
+class MyFrame(wx.Frame):
+    """
+    Frame that holds all other widgets
+    """
+
+    def __init__(self):
+        """Constructor"""
+        wx.Frame.__init__(self, None, wx.ID_ANY, "Pandas")
+        self._init_gui()
+        self.Layout()
+        self.Show()
+
+    def _init_gui(self):
+        df = pd.DataFrame(np.random.random((10, 5)))
+        table = DataTable(df)
+
+        grid = wx.grid.Grid(self, -1)
+        grid.SetTable(table, takeOwnership=True)
+        grid.AutoSizeColumns()
+
+        sizer = wx.BoxSizer(wx.VERTICAL)
+        sizer.Add(grid, 1, wx.EXPAND)
+        self.SetSizer(sizer)
+
+        self.Bind(wx.EVT_CLOSE, self.exit)
+
+    def exit(self, event):
+        self.Destroy()
+
+
+if __name__ == "__main__":
     app = wx.App()
-    frame = PandasTable(None, 'test', df)
+    frame = MyFrame()
     app.MainLoop()
-
-def main():
-    import pandas as pd
-    import numpy as np
-    df = pd.DataFrame({'a' : np.random.randn(10000), 'b' : np.random.randn(10000), 'c' : np.random.randn(10000)})
-    display(df)
-
-if __name__ == '__main__':
-    main()
