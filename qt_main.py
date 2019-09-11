@@ -19,7 +19,8 @@ class Widget(QtWidgets.QWidget):
         vLayout.addWidget(self.pandasTv)
         self.loadBtn.clicked.connect(self.loadFile)
         self.pandasTv.setSortingEnabled(True)
-
+        self.pandasTv.horizontalHeader().setStyleSheet("QHeaderView::section {background-color:lightblue;color: black;padding-left: 4px;border: 1px solid #6c6c6c;font: bold;}")
+		
     def loadFile(self):
         fileName, _ = QtWidgets.QFileDialog.getOpenFileName(self, "Open File", "", "Excel Files (*.xlsx)");
         self.pathLE.setText(fileName)
