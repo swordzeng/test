@@ -11,7 +11,7 @@ class FormInit(wx.Frame):
 		vbox = wx.BoxSizer(wx.VERTICAL)
 		btn_box = wx.BoxSizer(wx.HORIZONTAL)
 		
-		lbn_date = wx.StaticText(self.panel, -1, label='Date', size=(100,600), style = wx.ALIGN_CENTER)
+		lbn_date = wx.StaticText(self.panel, -1, label='Date', style = wx.ALIGN_CENTER)
 		font = wx.Font(14, wx.ROMAN, wx.FONTSTYLE_NORMAL, wx.NORMAL)
 		lbn_date.SetFont(font)
 		btn_box.Add(lbn_date, 0, wx.EXPAND | wx.TOP, 7)
@@ -19,8 +19,13 @@ class FormInit(wx.Frame):
 		btn_rpt = wx.Button(self.panel, label='REPORT')
 		btn_box.Add(btn_rpt)
 		
+		lbn_test = wx.StaticText(self.panel, -1, style = wx.ALIGN_CENTER)
+		lbn_test.SetLabel('TEST')
+		btn_box.Add(lbn_test, 0, wx.EXPAND | wx.TOP, 7)	
+		
 		lbn_grid = wx.StaticText(self.panel, -1, style = wx.ALIGN_CENTER)
-		lbn_grid.SetLabel('GRID')	
+		lbn_grid.SetLabel('GRID')
+		btn_box.Add(lbn_grid)			
 		
 		vbox.Add(btn_box)
 		vbox.Add(lbn_grid)
