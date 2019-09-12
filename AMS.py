@@ -1,39 +1,73 @@
-#coding=utf-8
-import wx
+from PyQt5 import QtCore, QtGui, QtWidgets
+from DataFrameModel import PandasModel
+import pandas as pd
 
-class FormInit(wx.Frame):
-	def __init__(self):
-		wx.Frame.__init__(self, None)
-		self.Title = 'AMS'
-		self.Size = (800, 600)
-		self.panel = wx.Panel(self, -1)
-		
-		vbox = wx.BoxSizer(wx.VERTICAL)
-		btn_box = wx.BoxSizer(wx.HORIZONTAL)
-		
-		lbn_date = wx.StaticText(self.panel, -1, label='Date', style = wx.ALIGN_CENTER)
-		font = wx.Font(14, wx.ROMAN, wx.FONTSTYLE_NORMAL, wx.NORMAL)
-		lbn_date.SetFont(font)
-		btn_box.Add(lbn_date, 0, wx.EXPAND | wx.TOP, 7)
-		
-		btn_rpt = wx.Button(self.panel, label='REPORT')
-		btn_box.Add(btn_rpt)
-		
-		lbn_test = wx.StaticText(self.panel, -1, style = wx.ALIGN_CENTER)
-		lbn_test.SetLabel('TEST')
-		btn_box.Add(lbn_test, 0, wx.EXPAND | wx.TOP, 7)	
-		
-		lbn_grid = wx.StaticText(self.panel, -1, style = wx.ALIGN_CENTER)
-		lbn_grid.SetLabel('GRID')
-		btn_box.Add(lbn_grid)			
-		
-		vbox.Add(btn_box)
-		vbox.Add(lbn_grid)
-		
-		self.panel.SetSizer(vbox)
-		
-if __name__ == '__main__':
-	app = wx.App()
-	frame = FormInit()
-	frame.Show()
-	app.MainLoop()
+
+class FromInit(QtWidgets.QWidget):
+    def __init__(self, parent=None):
+        QtWidgets.QWidget.__init__(self, parent=None)
+        self.setWindowTitle('AMS')
+        self.resize(500,300)
+
+        self.rptDate = ''
+        self.rptAcct = ''
+
+        vLayout = QtWidgets.QVBoxLayout(self)
+        hLayout = QtWidgets.QHBoxLayout()
+
+        lblDate = QtWidgets.QLabel(self)
+        lblDate.setText('Date')
+        hLayout.addWidget(lblDate)
+
+        cal = QtWidgets.QCalendarWidget(self)
+        dtEdit = QtWidgets.QDateEdit(QtCore.QDate.currentDate(), self)
+        dtEdit.setCalendarPopup(True)
+        dtEdit.setCalendarWidget(cal)
+        dtEdit.setMaximumDate(QtCore.QDate.currentDate())
+        dtEdit.setDate(cal.selectedDate())
+        dtEdit.dateChanged.connect(self.saveDate)
+        hLayout.addWidget(dtEdit)
+
+        lblAcct = QtWidgets.QLabel(self)
+        lblAcct.setText('Account')
+        hLayout.addWidget(lblAcct)
+
+        comboAcct = QtWidgets.QComboBox()
+        comboAcct.addItems(['Citic', 'CMB', 'ALL'])
+        comboAcct.currentTextChanged.connect(self.saveAcct)
+        hLayout.addWidget(comboAcct)
+
+        hLayout.addStretch(1)
+
+        btnReport = QtWidgets.QPushButton("REPORT", self)
+        btnReport.clicked.connect(self.loadReport)
+        hLayout.addWidget(btnReport)
+
+        vLayout.addLayout(hLayout)
+
+        self.tblHold = QtWidgets.QTableView(self)
+        
+        vLayout.addWidget(self.tblHold)
+
+        self.rptDate = dtEdit.date().toString('yyyyMMdd')
+        self.rptAcct = comboAcct.currentText()
+
+    def loadReport(self):
+        df = pd.read_excel('A_Shares.xlsx',sheet_name='Trans')
+        model = PandasModel(df)
+        self.tblHold.setModel(model)
+        self.tblHold.setSortingEnabled(True)
+        self.tblHold.horizontalHeader().setStyleSheet("QHeaderView::section {background-color:lightblue;color: black;padding-left: 4px;border: 1px solid #6c6c6c;font: bold;}")
+
+    def saveAcct(self, str):
+        self.rptAcct = str
+
+    def saveDate(self, date):
+        self.rptDate = date.toString('yyyyMMdd')
+
+if __name__ == "__main__":
+    import sys
+    app = QtWidgets.QApplication(sys.argv)
+    w = FromInit()
+    w.show()
+    sys.exit(app.exec_())
