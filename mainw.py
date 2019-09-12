@@ -1,6 +1,7 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
 import time
 from testgood import Ui_Form
+
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
 
@@ -52,6 +53,7 @@ class Ui_MainWindow(object):
         self.retranslateUi(MainWindow)
         self.ButtonShow.clicked.connect(self.showthewindow)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
+
     def showthewindow(self):
         self.MaingridLayout.addChildWidget(self.child)
         self.child.show()
@@ -67,6 +69,7 @@ class ChildrenForm(Ui_Form,QtWidgets.QWidget):
     def __init__(self):
         super().__init__()
         self.setupUi(self)
+
 if __name__ == "__main__":
     import sys
     app = QtWidgets.QApplication(sys.argv)
